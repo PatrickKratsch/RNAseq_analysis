@@ -33,13 +33,21 @@ done
 mkdir /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/assembled
 for b in $bams; do
   /array/Patrick_RNA_seq/software/stringtie-1.3.3b.Linux_x86_64/stringtie \
+  -p 8 \
   -G /array/Patrick_RNA_seq/reference/gtf/Drosophila_melanogaster.BDGP6.91.gtf \
   -o /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/assembled/$b.gtf \
-  -l /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/BAM/$b
+  -l $b\_assembled \
+  /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/BAM/$b
 done
 
 cd /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/assembled
-printf '%s\n' *.gtf > mergelist.txt
+gtf_dirs=ls
+touch mergelist.txt
+for gtf_dir in $gtf_dirs; do
+  cd gtf_dir
+  printf '%s\n' *.gtf > ../mergelist.txt
+  cd ..
+done
 mkdir /array/Patrick_RNA_seq/data/GEPD_run/tuxedo/merged_gtf
 /array/Patrick_RNA_seq/software/stringtie-1.3.3b.Linux_x86_64/stringtie \
 -p 4 \
