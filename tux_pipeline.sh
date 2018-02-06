@@ -57,9 +57,9 @@ $STRINGTIE --merge -p $CPUS -G $GTF -o /$BASEDIR/merged_gtf/merged.gtf mergelist
 # 7. Create Ballgown object for analysis in R
 cd $BASEDIR/BAM
 for b in $(echo *.bam); do
-  mkdir $BASEDIR/ballgown/$b
+  mkdir $BASEDIR/ballgown/$b\_BG
   $STRINGTIE -e -B -p $CPUS -G $BASEDIR/merged_gtf/merged.gtf \
-  -o $BASEDIR/ballgown/$b/$b\_merged.gtf $BASEDIR/BAM/$b
+  -o $BASEDIR/ballgown/$b\_BG/$b\_merged.gtf $BASEDIR/BAM/$b
 done
 
 exit
