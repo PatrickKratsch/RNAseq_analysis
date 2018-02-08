@@ -1,4 +1,4 @@
-### RNA-seq analysis - GEPD_run %% reanalyse version
+### RNA-seq analysis
 ### Analysis based on https://rpubs.com/kapeelc12/Ballgown
 library(ballgown)
 library(RSkittleBrewer)
@@ -37,12 +37,12 @@ bg_gene_names <- unique(texpr(bg_filt, 'all')[, 9:10])
 gene_expression <- as.data.frame(gexpr(bg_filt))
 
 ## Change column names
-colnames(gene_expression) <- c("17_GEPD1", "17_GEPD2", "17_GEPD5",
-                               "17_loxp1", "17_loxp3", "17_loxp6",
-                               "18_GEPD1", "18_GEPD2", "18_GEPD3",
-                               "18_GEPD4", "18_GEPD5", "18_GEPD6",
-                               "18_loxp1", "18_loxp2", "18_loxp3",
-                               "18_loxp4", "18_loxp5", "18_loxp6")
+colnames(gene_expression) <- c("17_G1", "17_G2", "17_G5",
+                               "17_l1", "17_l3", "17_l6",
+                               "18_G1", "18_G2", "18_G3",
+                               "18_G4", "18_G5", "18_G6",
+                               "18_l1", "18_l2", "18_l3",
+                               "18_l4", "18_l5", "18_l6")
 
 ## Assign colors to each sample (randomly)
 color <- grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
@@ -86,10 +86,10 @@ for(colname in colnames(gene_expression)){
 ## Plot3: Plot maximum gene expression per sample/library (by Patrick Kratschmer)
 maxi_df <- as.data.frame(cbind(sample=as.vector(colnames(gene_expression)), 
                                max_expr=as.numeric(maxi), 
-                               genotype=c(rep("GEPD",3),
-                                          rep("loxP",3),
-                                          rep("GEPD",6),
-                                          rep("loxP",6))))
+                               genotype=c(rep("GD",3),
+                                          rep("lP",3),
+                                          rep("GD",6),
+                                          rep("lP",6))))
 ggplot(maxi_df, aes(x=sample, y=max_expr, colour=genotype)) +
   geom_point(size=2) +
   theme_bw()
@@ -103,11 +103,11 @@ staxlab(1, 1:18, labels, nlines = 3)
 
 ## Plot5: Plot pairs of replicates to assess reproducibility of technical 
 ## and biological replicates
-x = gene_expression[,"18_GEPD1"]
-y = gene_expression[,"17_GEPD1"]
+x = gene_expression[,"18_GD1"]
+y = gene_expression[,"17_GD1"]
 plot(x = log2(x + 1), y=log2(y + 1), 
-     pch = 16, col = "blue", cex = 0.25, xlab = "FPKM (18_GEPD1)", 
-     ylab = "FPKM (17_GEPD1)", 
+     pch = 16, col = "blue", cex = 0.25, xlab = "FPKM (18_GD1)", 
+     ylab = "FPKM (17_GD1)", 
      main = "Comparison of Expression Values for a Pair of Replicates")
 abline(a = 0, b = 1)
 rs = cor(x, y)^2
@@ -120,8 +120,8 @@ colors = colorRampPalette(c("white", "blue", "#007FFF",
                             "cyan","#7FFF7F", "yellow", 
                             "#FF7F00", "red", "#7F0000"))
 smoothScatter(x=log2(x + 1), y=log2(y + 1), 
-              xlab="FPKM (18_GEPD1)", 
-              ylab="FPKM (17_GEPD1)", 
+              xlab="FPKM (18_GD1)", 
+              ylab="FPKM (17_GD1)", 
               main="Comparison of expression values for a pair of replicates", 
               colramp=colors, nbin=200)
 
@@ -165,7 +165,7 @@ results_genes <- stattest(bg_filt, feature = "gene",
 sig = which(results_genes$qval < 0.05)
 results_genes[, "log2(FC)"] = log2(results_genes[, "fc"])
 hist(results_genes[sig, "log2(FC)"], breaks = 50, col = "steelblue", 
-     xlab = "log2(FC) GEPD vs loxP", 
+     xlab = "log2(FC) GD vs lP", 
      main = "Distribution of Differential Expression Values")
 abline(v = -1, col = "black", lwd = 2, lty = 2)
 abline(v = 1, col = "black", lwd = 2, lty = 2)
@@ -176,12 +176,12 @@ legend("topright", "Number of DEG = 772")
 # Note that these data are based on bg_filt (because gene_expression
 # was made by fetching gexpr(bg_filt), hence all genes present here are
 # pre-filtered!)
-gene_expression[, "GEPD"] = apply(gene_expression[, c(1:3, 7:12)], 1, mean)
-gene_expression[, "loxP"] = apply(gene_expression[, c(4:6, 13:18)], 1, mean)
-x = log2(gene_expression[, "GEPD"] + 1)
-y = log2(gene_expression[, "loxP"] + 1)
-plot(x = x, y = y, pch = 16, cex = 0.25, xlab = "GEPD log2(FPKM)", 
-     ylab="loxP log2(FPKM)", main="GEPD vs loxP")
+gene_expression[, "GD"] = apply(gene_expression[, c(1:3, 7:12)], 1, mean)
+gene_expression[, "lP"] = apply(gene_expression[, c(4:6, 13:18)], 1, mean)
+x = log2(gene_expression[, "GD"] + 1)
+y = log2(gene_expression[, "lP"] + 1)
+plot(x = x, y = y, pch = 16, cex = 0.25, xlab = "GD log2(FPKM)", 
+     ylab="lP log2(FPKM)", main="GD vs lP")
 abline(a = 0, b = 1)
 xsig = x[sig]
 ysig = y[sig]
