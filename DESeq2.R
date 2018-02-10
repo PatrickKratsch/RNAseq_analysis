@@ -1,4 +1,4 @@
-## DESeq2 RNA-seq analysis of GEPD vs. loxP (9 replicates)
+## DESeq2 RNA-seq analysis of GD vs. lP (9 replicates)
 ## per genotype) - Alignment: STAR 2.5.3a - Pipeline from:
 ## https://www.bioconductor.org/help/workflows/rnaseqGene/
 ## paper: https://f1000research.com/articles/4-1070
@@ -189,10 +189,10 @@ head(resSig[order(resSig$padj), ], 9)
 # Plot7: Plot counts of specific genes between groups
 # Do this for pdf here - use any FB gene id
 topGene <- rownames(res)[which.min(res$padj)]
-plotCounts(dds, gene = "FBgn0030773", intgroup=c("genotype"))
+plotCounts(dds, gene = topGene, intgroup=c("genotype"))
 
 # Plot8: Repeat Plot7 as a ggplot version
-geneCounts <- plotCounts(dds, gene = "FBgn0023178", intgroup = c("genotype", "batch"),
+geneCounts <- plotCounts(dds, gene = topGene, intgroup = c("genotype", "batch"),
                          returnData = TRUE)
 ggplot(geneCounts, aes(x = genotype, y = count, color = batch)) +
   scale_y_log10() +  geom_beeswarm(cex = 3)
@@ -261,9 +261,9 @@ resOrdered <- res[order(res$pvalue), ]
 
 # Exporting results
 resOrderedDF <- as.data.frame(resOrdered)
-write.csv(resOrderedDF, file = "GEPD_bc_gene_results.csv")
+write.csv(resOrderedDF, file = "genes.csv")
 
-htmlRep <- HTMLReport(shortName="GEPD_report", title="GEPD_bc_gene_report",
+htmlRep <- HTMLReport(shortName="report", title="report",
                       reportDirectory="./report")
 publish(resOrderedDF, htmlRep)
 url <- finish(htmlRep)
@@ -273,14 +273,14 @@ browseURL(url)
 sign <- res[which(res$padj < 0.05 & !is.na(res$padj)), ]
 signOrdered <- sign[order(sign$padj), ]
 signOrderedDF <- as.data.frame(signOrdered)
-write.csv(signOrderedDF, "GEPD_bc_sign_gene_results.csv")
+write.csv(signOrderedDF, "sig_genes.csv")
 
 ## Extract the intersect significant genes of bc and tux pipelines
 # Use awk and bash to generate a text file contining the names
 # of the genes that are significant in both pipelines
-intersect_genes <- read.table("GEPD_sign_genes_intersect.txt")
+intersect_genes <- read.table("intersect_genes.txt")
 signOrderedDT <- setDT(signOrderedDF)
 intersectDT <- signOrderedDT[symbol %in% intersect_genes$V1, ]
 intersectDTordered <- intersectDT[order(intersectDT$padj), ]
-write.csv(intersectDTordered, "GEPD_sign_gene_results_intersect_bc_tux.csv")
+write.csv(intersectDTordered, "intersect_genes.csv")
 
