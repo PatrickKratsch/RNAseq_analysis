@@ -108,7 +108,7 @@ sampleDists <- dist(t(assay(rld)))
 sampleDistMatrix <- as.matrix(sampleDists)
 rownames(sampleDistMatrix) <- paste(rld$genotype, rld$batch, sep = " - ")
 colnames(sampleDistMatrix) <- NULL
-colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+colors <- colorRampPalette(rev(brewer.pal(9, "Blues")) )(255)
 pheatmap(sampleDistMatrix,
          clustering_distance_rows = sampleDists,
          clustering_distance_cols = sampleDists,
@@ -257,6 +257,12 @@ res$entrez <- mapIds(org.Dm.eg.db,
                      keytype="FLYBASE",
                      multiVals="first")
 
+res$FBid <- mapIds(org.Dm.eg.db,
+                   keys=row.names(res),
+                   column="FLYBASE",
+                   keytype="FLYBASE",
+                   multiVals="first")
+
 resOrdered <- res[order(res$pvalue), ]
 
 # Exporting results
@@ -284,3 +290,30 @@ intersectDT <- signOrderedDT[symbol %in% intersect_genes$V1, ]
 intersectDTordered <- intersectDT[order(intersectDT$padj), ]
 write.csv(intersectDTordered, "intersect_genes.csv")
 
+# New heatmap with the 50 most significant genes (based on FDR)
+# Note that we need the loop to get the correct gene symbols
+# that correspond to the gene IDs
+most_sign_genes <- as.data.frame(cbind(as.character(head(resOrderedDF$FBid, 50)),
+                         as.character(head(resOrderedDF$symbol, 50))))
+most_sign_genes_ind <- which(row.names(assay(rld)) %in% most_sign_genes$V1)
+mat  <- assay(rld)[most_sign_genes_ind, ]
+mat  <- mat - rowMeans(mat)
+mat_row_names <- row.names(assay(rld))[most_sign_genes_ind]
+
+gene_names_ordered <- list()
+i <- 1
+for(id in mat_row_names){
+  j <- 1
+  for(symbol in most_sign_genes$V1){
+    if(id == symbol){
+      gene_names_ordered[i] <- as.character(most_sign_genes$V2[j])
+      i <- i + 1
+    }
+    j <- j + 1
+  }
+}
+gene_names_ordered <- sapply(gene_names_ordered, paste0, collapse="")
+
+row.names(mat) <- gene_names_ordered
+anno <- as.data.frame(colData(rld)[, c("batch","genotype")])
+pheatmap(mat, annotation_col = anno)
