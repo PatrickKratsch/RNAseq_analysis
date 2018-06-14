@@ -13,6 +13,10 @@
 # in first column
 sampleTable <- read.csv("sampleTable.csv", row.names = 1)
 
+# Update bioconductor packages
+source("https://bioconductor.org/biocLite.R")
+biocLite()
+
 ## Start DESeq2 analysis
 library("Rsamtools")
 library("GenomicFeatures")
@@ -74,6 +78,8 @@ se$genotype
 dds <- DESeqDataSet(se, design = ~ batch + genotype)
 
 # Perform filtering to reduce object size of dds
+# Not that this means that we disregard any genes for which
+# the number of counts across all samples is 1 or lower
 dds <- dds[ rowSums(counts(dds)) > 1, ]
 
 # Perform rlog transformation
@@ -99,6 +105,9 @@ colnames(df)[1:2] <- c("x", "y")
 
 ggplot(df, aes(x = x, y = y)) + geom_hex(bins = 80) +
   coord_fixed() + facet_grid( . ~ transformation) 
+
+# Save this plot with 300 dpi resolution (instead of default 72)
+ggsave("transformations.png")
 
 # Assess the similarity between samples by calculating the 
 # Euclidian distances between samples - for this, use the 
@@ -138,6 +147,9 @@ ggplot(pcaData, aes(x = PC1, y = PC2, color = genotype, shape = batch)) +
   xlab(paste0("PC1: ", percentVar[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar[2], "% variance")) +
   coord_fixed()
+
+# Save PCA plot with 300 dpi
+ggsave("./R_plots/PCA_libraries.png")
 
 # Plot5: MDS plot - multidimensional scaling = similar to PCA 
 mds <- as.data.frame(colData(rld))  %>%
@@ -189,10 +201,10 @@ head(resSig[order(resSig$padj), ], 9)
 # Plot7: Plot counts of specific genes between groups
 # Do this for pdf here - use any FB gene id
 topGene <- rownames(res)[which.min(res$padj)]
-plotCounts(dds, gene = topGene, intgroup=c("genotype"))
+plotCounts(dds, gene = "FBgn0014018", intgroup=c("genotype"))
 
 # Plot8: Repeat Plot7 as a ggplot version
-geneCounts <- plotCounts(dds, gene = topGene, intgroup = c("genotype", "batch"),
+geneCounts <- plotCounts(dds, gene = "FBgn0014018", intgroup = c("genotype", "batch"),
                          returnData = TRUE)
 ggplot(geneCounts, aes(x = genotype, y = count, color = batch)) +
   scale_y_log10() +  geom_beeswarm(cex = 3)
@@ -201,7 +213,7 @@ ggplot(geneCounts, aes(x = genotype, y = count, color = batch)) +
 # A stands for average - note that this plot shows only genes with
 # a padj threshold of < 0.1 (default)
 res <- lfcShrink(dds, contrast=c("genotype","m","c"), res=res)
-plotMA(res, ylim = c(-5, 5))
+plotMA(res, alpha=0.05, ylim = c(-1.2, 1))
 
 # Plot10: If we don't shrink the fold changes (which mainly affects
 # genes with very low counts and highly variable counts), the plot 
@@ -210,11 +222,103 @@ res.noshr <- results(dds)
 plotMA(res.noshr, ylim = c(-9, 9))
 
 # Plot11: Label specific genes on the MA plot
-plotMA(res, ylim = c(-5,5))
+plotMA(res, alpha=0.05, ylim = c(-1.2, 1))
 topGene <- rownames(res)[which.min(res$padj)]
-with(res["FBgn0023178", ], {
+with(res["FBgn0039298", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0039298", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
   points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
-  text(baseMean, log2FoldChange, topGene, pos=2, col="dodgerblue")
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0010041", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0010041", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0028374", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0028374", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0243514", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0243514", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0013812", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0013812", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0013813", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0013813", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0035160", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0035160", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0283437", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0283437", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0033367", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0033367", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0033926", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0033926", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0033928", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0033928", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0035766", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0035766", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0027348", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0027348", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0267792", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0267792", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0014018", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0014018", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
+})
+with(res["FBgn0042201", ], {
+  gene_name_dot <- mapIds(org.Dm.eg.db, keys="FBgn0042201", column="SYMBOL", 
+                          keytype="FLYBASE", multiVals="first")
+  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
+  text(baseMean, log2FoldChange, gene_name_dot, pos=2, col="dodgerblue")
 })
 
 # Plot12: Plot a histogram of p values - exclude very lowly expressed
@@ -251,12 +355,6 @@ res$symbol <- mapIds(org.Dm.eg.db,
                      keytype="FLYBASE",
                      multiVals="first")
 
-res$entrez <- mapIds(org.Dm.eg.db,
-                     keys=row.names(res),
-                     column="ENTREZID",
-                     keytype="FLYBASE",
-                     multiVals="first")
-
 res$FBid <- mapIds(org.Dm.eg.db,
                    keys=row.names(res),
                    column="FLYBASE",
@@ -290,16 +388,22 @@ intersectDT <- signOrderedDT[symbol %in% intersect_genes$V1, ]
 intersectDTordered <- intersectDT[order(intersectDT$padj), ]
 write.csv(intersectDTordered, "intersect_genes.csv")
 
-# New heatmap with the 50 most significant genes (based on FDR)
+## New heatmap with the 50 most significant genes (based on FDR)
 # Note that we need the loop to get the correct gene symbols
 # that correspond to the gene IDs
+# This heatmap is based on rld-transformed raw counts - we are
+# taking the mean of the rld-transformed counts across all samples,
+# and then subtracting that mean from the rld-transformed counts
+# for each sample - that way, we get the relative expression of
+# each gene per sample relative to the mean of the rld-transformed counts
+# for each sample
 most_sign_genes <- as.data.frame(cbind(as.character(head(resOrderedDF$FBid, 50)),
                          as.character(head(resOrderedDF$symbol, 50))))
 most_sign_genes_ind <- which(row.names(assay(rld)) %in% most_sign_genes$V1)
 mat  <- assay(rld)[most_sign_genes_ind, ]
 mat  <- mat - rowMeans(mat)
-mat_row_names <- row.names(assay(rld))[most_sign_genes_ind]
 
+mat_row_names <- row.names(assay(rld))[most_sign_genes_ind]
 gene_names_ordered <- list()
 i <- 1
 for(id in mat_row_names){
@@ -317,3 +421,36 @@ gene_names_ordered <- sapply(gene_names_ordered, paste0, collapse="")
 row.names(mat) <- gene_names_ordered
 anno <- as.data.frame(colData(rld)[, c("batch","genotype")])
 pheatmap(mat, annotation_col = anno)
+
+## New heatmap with selected genes based on DAVID gene ontology
+# analysis - focus on 4 different clusters here - use awk to
+# extract the Flybase IDs of these genes, save as .txt file, and
+# lead into R - Do one heatmap per functional cluster, because otherwise
+# the trends are not easily seen
+DAVID_cluster <- read.table("gst.txt")
+DAVID_ind <- which(resOrderedDF$FBid %in% DAVID_cluster$V1)
+DAVID_genes <- as.data.frame(cbind(as.character(resOrderedDF$FBid[DAVID_ind]),
+                                       as.character(resOrderedDF$symbol[DAVID_ind])))
+DAVID_rld_ind <- which(row.names(assay(rld)) %in% DAVID_genes$V1)
+mat  <- assay(rld)[DAVID_rld_ind, ]
+mat  <- mat - rowMeans(mat)
+
+mat_row_names <- row.names(assay(rld))[DAVID_rld_ind]
+gene_names_ordered <- list()
+i <- 1
+for(id in mat_row_names){
+  j <- 1
+  for(symbol in DAVID_genes$V1){
+    if(id == symbol){
+      gene_names_ordered[i] <- as.character(DAVID_genes$V2[j])
+      i <- i + 1
+    }
+    j <- j + 1
+  }
+}
+gene_names_ordered <- sapply(gene_names_ordered, paste0, collapse="")
+
+row.names(mat) <- gene_names_ordered
+anno <- as.data.frame(colData(rld)[, c("batch","genotype")])
+pheatmap(mat, annotation_col = anno, show_rownames = T)
+
